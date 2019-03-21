@@ -1,0 +1,126 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\begin{document}
+
+\title{Coursework Report}
+
+\author{Hongze YU\\ {\small 971850}}
+\date{\today}
+\maketitle
+\begin{abstract}
+This report is writing for answering the request problems, which is the analysis of complexity, and explain my algorithm design idea, which deals with finding the approach elements from set A,  B and C base on Set Theory. Moreover, it will give an experimental result of my algorithm which concluding a total executing time and some assert outputs.
+\end{abstract}
+
+\tableofcontents \newpage
+\section{Question One}
+The codes are given by the mathematician shown in the following. And the complexity analysis is written in comment lines. Those declaration lines and test lines have not been considered without there is a new object created.
+
+\begin{verbatim}
+class TestClass {
+  public static myArray substract (myArray a, myArray b) {
+    int[] A = a.arr; int N = a.n;
+    int[] B = b.arr; int M = b.n;
+    int[] C = new int[N]; //1 array space
+    int i = 0, j = 0, k = 0; 
+    for (i = 0; i < N; i++) { // N times
+      for (j = 0; j < M; j++) { // N^2 times
+        if (A[i] == B[j]) break; //N^2 times
+      }
+      if (j == M) { //N times
+        C[k] = A[i]; k++; //N times
+      }
+    }
+    return new myArray(C,k); // 1 time and 1 space
+  }
+  public static myArray union (myArray a, myArray b) {
+    int[] A = a.arr; int N = a.n;
+    int[] B = b.arr; int M = b.n;
+    int[] C = new int[M+N]; // 1 array space
+    int i = 0, j = 0, k = 0;
+    for (j = 0; j < M; j++) { //N times
+      C[k] = B[j]; //N times
+      k++; //N times
+    }
+    for (i = 0; i < N; i++) { //N times
+      for (j = 0; j < M; j++) { //N^2 times
+        if (A[i] == B[j]) break; //N^2 times
+      }
+      if (j == M) { //N times
+      C[k] = A[i]; k++; //N times
+      }
+    }
+    for (i = 1; i < k; i++){ //N-1 times
+      int key = C[i]; //N-1 times
+      j = i-1; //N-1 times
+      while (j >= 0 && C[j] > key) {//(N-1)*N/2 times
+        C[j+1] = C[j];  //(N-1)*N/2 times
+        j = j - 1; //(N-1)*N/2 times
+      }
+    C[j+1] = key; //N-1 times
+    }
+    return new myArray(C,k); //1 time and 1 space
+  }
+  public static void main(String args[] ) throws Exception {
+    myArray a = new myArray(args[0]);
+    myArray b = new myArray(args[1]);
+    myArray c = new myArray(args[2]);
+    Stopwatch st1 = new Stopwatch();
+    myArray x = substract( union(substract(a,b),substract(b,a)), 
+      substract( union(substract(a,b),substract(b,a)), c) ); // 6 times
+ substract method and 2 times union.
+    x.printModulus();
+    double time1 = st1.elapsedTime(); // the result in millis
+    System.err.println("Elapsed Time: "+time1+" s");
+    }
+  }
+}
+\end{verbatim}
+
+Therefore, we can see the time complexity of substract method is $O(n^2)$ as well as union, and its space complexity is 2. In the main method, the mathematician repeatedly used these two methods but not in a loop, so the time complexity of this algorithm is $O(n^2)$, and it will need 8 array space and 8 myArr object space in the machine memory.
+
+
+\section{Question Two}
+
+The basic idea is elementary, for all elements in the space, if we give them 3 attributes which show their relations with set A, B and C ( in A, in B and in C), then we can compute any groups we need. For example, the coursework required a group of elements: $\{ t\in C | t\in A \wedge t\notin B$ or $t\in B \wedge t\notin A \}$.
+
+After that, we need to assess every element in set c and create 2 boolean arrays to contain in A and in B attributes. Since the input sequences are sorted, we can use two unrenewable pointers to help the comparison. Thus the total complexity can be reduced to $O(n)$.
+
+My code as follow, and few lines are ignored in complexity analysis:
+
+\begin{verbatim}
+		int N = a.arr.length;
+		int M = b.arr.length;
+		int O = c.arr.length;
+		int[] nuLL = new int[O]; //1 array space
+		myArray x = new myArray(nuLL, 0); //1 myArray
+		boolean[] in_A = new boolean[O]; //1 array
+		boolean[] in_B = new boolean[O];//1 array
+		int pointerA = 0;
+		int pointerB = 0;
+		
+		for (int i = 0; i < O; i++){ // N times
+			while (pointerA < N && a.arr[pointerA] <= c.arr[i]){ // N+N times
+				if (a.arr[pointerA] == c.arr[i]) in_A[i] = true;  // N+N times
+				else in_A[i] = false; // N+N times
+				pointerA++; //N+N times
+			}
+		}
+		for (int i = 0; i < O; i++){ // N times
+			while (pointerB < M && b.arr[pointerB] <= c.arr[i]){ // N+N times
+				if (b.arr[pointerB] == c.arr[i]) in_B[i] = true;// N+N times
+				else in_B[i] = false;// N+N times
+				pointerB++;// N+N times
+			}
+		}
+		for (int i = 0; i < O; i++){ //N times
+			if ((in_A[i] & (!in_B[i])) | (in_B[i] & (!in_A[i]))){ //N times
+				x.arr[x.n] = c.arr[i]; //N times
+				x.n++; //N times
+			}
+		}
+\end{verbatim}
+Therefore, the total complexity of my algorithm is $O(n)$, and only used 2 array and 1 object space.
+\section{Summary}
+In conclusion, the reason why my program is better mainly concluding 2 points. Firstly, accessible to expense if we need, because we can compute any parts we want by a small changing. In opposite, mathematician's algorithm requires more methods. Secondly, we used immobile pointers in for-loop. Thus we avoided loop nesting.
+\end{document}
